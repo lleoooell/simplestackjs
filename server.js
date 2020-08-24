@@ -77,6 +77,32 @@ app.post('/api/todo',function(req, res){
 
 });
 
+app.put('/api/todo/:id',function(req, res){
+	console.log("req.paras:");
+	// console.log(req.body);
+	console.log(req.params.id);
+	console.log(req.body);
+	Todo.findById(req.params.id).exec(function(err, todo){
+		if(err){console.log(err)}
+		todo.todo = req.body.newvalue;
+		todo.save().then(function(updatedTodo){
+
+		res.json(updatedTodo);
+		})
+	});
+
+	// const toCreate = new Todo(req.body);
+
+	// toCreate.save().then(function(newToDo) {
+	// 	io.emit("todo_new",newToDo);
+
+	// 	console.log(newToDo);
+	// 	res.send(newToDo);
+
+	// });
+
+});
+
 app.delete('/api/todo/:id/',function(req, res){
 
 	console.log("req.param:");

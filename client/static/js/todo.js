@@ -21,13 +21,32 @@ fetch('/api/todo')
     });
 
 
-    
+
 
 function removeTodo(id) {
     console.log(id);
 
     fetch('/api/todo/' + id, {
             method: 'DELETE',
+        })
+        .then(function(res) {
+            return res.text()
+        }) // or res.json()
+        .then(function(res) {
+            console.log(res);
+            
+        });
+}
+
+function editTodo(id, value) {
+    console.log(id);
+
+    fetch('/api/todo/' + id, {
+            method: 'PUT',
+            body: JSON.stringify({"iid" : id, 'newvalue' : value }),
+            headers: {
+                'Content-Type': 'application/json'
+            }
         })
         .then(function(res) {
             return res.text()
@@ -46,13 +65,30 @@ function addTodo(todo) {
     // step2 : ajoute du contenu au li
     li.innerHTML = todo.todo;
 
-    // step 3 : crée button pour supprimer
-    var buttonD = document.createElement("button");
+    // step 3 : crée button pour supprimer, editer
 
-    buttonD.innerHTML = "X";
+    var buttonD = document.createElement("span");
+    var span = document.createElement("span");
+    // var edit = document.createElement("a");
+    // var span = document.createElement("i");
+    // edit.innerHTML = 'edit';
+    // var i = document.createElement("i");
+    span.classList.add("material-icons");
+    span.innerHTML = 'mode_edit';
+    // edit.classList.add("modal-trigger");
+    // edit.href="#modal1";
+    buttonD.classList.add("material-icons");
+    buttonD.innerHTML = 'delete';
+
+    // buttonD.innerHTML = "X";
     // li.dataset.idtoremove = todo._id;
     li.id = todo._id;
+    li.dataset.todo = todo.todo;
+
     buttonD.classList.add("deleteBtn");
+    buttonD.classList.add("badge");
+    span.classList.add("badge");
+    li.classList.add("collection-item");
 
 
     buttonD.onclick = function(event) {
@@ -65,7 +101,22 @@ function addTodo(todo) {
 
         // toRem.remove();
     }
+
+    span.onclick = function(event) {
+        // body...
+        console.log(event);
+        console.log(event.target.parentNode);
+        var li = event.target.parentNode;
+        var modal = document.getElementById("modal1");
+        var instance = M.Modal.getInstance(modal);
+        instance.open();
+        document.getElementById("todotoedit").value= li.dataset.todo;
+        document.getElementById("todotoedit").dataset.tid= li.id;
+    }
     li.appendChild(buttonD);
+    li.appendChild(span);
+    // edit.appendChild(span);
+    // span.appendChild(i);
     ul.appendChild(li);
 }
 
@@ -106,7 +157,19 @@ btn.onclick = function() {
     document.getElementById("newTodo").value = '';
 }
 
+var submitEdit = document.getElementById("submitEdit");
 
+submitEdit.onclick=function(event) {
+    // body...
+    console.log("evennnnnnt");
+    var editInput = document.getElementById("todotoedit");
+
+    var todoId = editInput.dataset.tid;
+    var todoNewValue = editInput.value;
+
+    editTodo(todoId,todoNewValue);
+
+}
 
 
 
@@ -125,3 +188,9 @@ socket.on('todo_new', function(socket) {
     console.log(socket);
     addTodo(socket);
 });
+
+
+  document.addEventListener('DOMContentLoaded', function() {
+    var elems = document.querySelectorAll('.modal');
+    var instances = M.Modal.init(elems, {});
+  });
