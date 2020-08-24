@@ -4,6 +4,9 @@ const app = express();
 const mongoose = require('mongoose');
 var bodyParser = require('body-parser')
 
+// add socket.io
+var http = require('http').createServer(app);
+var io = require('socket.io')(http);
 
 // connect  DB
 mongoose.connect('mongodb://localhost:27017/test', {useNewUrlParser: true, useUnifiedTopology: true});
@@ -14,9 +17,6 @@ db.on('error', console.error.bind(console, 'connection error:'));
 db.once('open', function() {
   // we're connected!
   console.log('db connected on port 27017');
-
-
-
 });
 
 // IMPORTS SCHEMAS
@@ -68,7 +68,8 @@ app.post('/api/todo',function(req, res){
 	const toCreate = new Todo(req.body);
 
 	toCreate.save().then(function(newToDo) {
-	
+		io.emit("todo_new",newToDo);
+
 		console.log(newToDo);
 		res.send(newToDo);
 
@@ -84,6 +85,9 @@ app.delete('/api/todo/:id/',function(req, res){
 
 	Todo.findByIdAndDelete(myIdToFind).exec(function(err){
 		if(err){console.log(err)}
+
+
+		io.emit("todo_delete",myIdToFind);		
 		res.send('deleted');
 
 	})
@@ -101,10 +105,14 @@ app.delete('/api/todo/:id/',function(req, res){
 
 
 
+// handle socket events
+io.on('connection', (socket) => {
+  console.log('a user connected');
+});
 
 // START server
 
-app.listen(3000, function () {
+http.listen(3000, function () {
   console.log('Example app listening on port 3000!')
 })
 
