@@ -2,22 +2,49 @@
 
 var ul = document.getElementById("TodoUl");
 
+
+function removeTodo(target, id) {
+    console.log(target);
+    console.log(id);
+   
+    fetch('/api/todo/' + id, {
+            method: 'DELETE',
+        })
+        .then(function(res){
+            return res.text()
+        }) // or res.json()
+        .then(function(res) {
+           console.log(res)
+           target.remove();
+        });
+}
+
 function addTodo(todo) {
+
+
+    // step1 : crée un li 
     var li = document.createElement('li');
+    // step2 : ajoute du contenu au li
     li.innerHTML = todo.todo;
-    // li.id = index;
+
+    // step 3 : crée button pour supprimer
     var buttonD = document.createElement("button");
+
     buttonD.innerHTML = "X";
+    buttonD.dataset.idtoremove = todo._id;
+
     buttonD.classList.add("deleteBtn");
 
-    buttonD.onclick = function(event){
-    	console.log(event);
-    	console.log(event.target);
-    	var toRem = event.target.parentNode;
-    	console.log(toRem);
-    	// ul.removeChild(toRem);
-    
-    	toRem.remove();
+
+    buttonD.onclick = function(event) {
+        console.log(event);
+        console.log(event.target);
+        var toRem = event.target.parentNode;
+
+        removeTodo(toRem, event.target.dataset.idtoremove);
+        // ul.removeChild(toRem);
+
+        // toRem.remove();
     }
     li.appendChild(buttonD);
     ul.appendChild(li);
@@ -33,7 +60,7 @@ fetch('/api/todo')
     })
     .then(function(myJson) {
 
-    	// pour chaque objet de la collection, ajouter un li via la fonction addTodo
+        // pour chaque objet de la collection, ajouter un li via la fonction addTodo
 
         myJson.forEach(function(item) {
             console.log(item);
@@ -42,17 +69,37 @@ fetch('/api/todo')
 
     });
 
-
+function createTodo(todo) {
+    fetch('/api/todo', {
+        method: 'post',
+        body: JSON.stringify(todo),
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    }).then(function(response) {
+        console.log("response");
+        console.log(response);
+        return response.json();
+    }).then(function(data) {
+        console.log(data);
+        addTodo(data);
+    });
+    // body...
+}
 // gérer le clic évent
 var btn = document.getElementById('clicBtn');
 
 btn.onclick = function() {
-    console.log('btn cliqué');
+    console.log('btn');
     // récupérer la valeur d'un champ input
     var value = document.getElementById("newTodo").value;
     console.log(value);
+
+
     // formater la valeur de l'input pour la faire correspondre à notre modèle todo = {"todo" : String} et l'envoyer à la fonction addTodo
-    addTodo({"todo" : value});
+    createTodo({
+        "todo": value
+    });
     // reset la valeur du champ pour permettre d'entrer une nouvelle valeur
     document.getElementById("newTodo").value = '';
 }

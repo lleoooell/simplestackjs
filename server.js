@@ -1,24 +1,108 @@
+// Chargement des lib 
 const express = require('express');
 const app = express();
+const mongoose = require('mongoose');
+var bodyParser = require('body-parser')
 
-var toDoS = [{ "todo" : 'acheter du pain'},{"todo": 'passer au pressing'},{"todo" : "finir la vaisselle"}];
+
+// connect  DB
+mongoose.connect('mongodb://localhost:27017/test', {useNewUrlParser: true, useUnifiedTopology: true});
+
+const db = mongoose.connection;
+
+db.on('error', console.error.bind(console, 'connection error:'));
+db.once('open', function() {
+  // we're connected!
+  console.log('db connected on port 27017');
+
+
+
+});
+
+// IMPORTS SCHEMAS
+const Todo = require('./server/api/todo/todo.js');
+
+
+
+// DEFINE CONF AND USES 
+
 
 // app.use('/css', express.static(__dirname + '/client/static/css'));
 // app.use('/js', express.static(__dirname + '/client/static/js'));
 app.use('/lib', express.static(__dirname + '/client/static/'));
 
+// parse application/x-www-form-urlencoded
+app.use(bodyParser.urlencoded({ extended: true }))
+ 
+// parse application/json
+app.use(bodyParser.json())
+ 
 
+
+// CREATE ROUTES
 app.get('/', function (req, res) {
   res.sendFile( __dirname +  "/client/index.html" );
 
 });
 
 app.get('/api/todo', function (req, res) {
-  res.json(toDoS);
+
+
+  Todo.find({}).exec(function(err, todoList) {
+  	if(err){
+  		console.log(err);
+  	}
+    console.log(todoList);
+    res.json(todoList);
+ 	
+  });
+
+
+});
+
+app.post('/api/todo',function(req, res){
+	console.log("req.body:");
+	console.log(req.body);
+	console.log(req.body.todo);
+
+	const toCreate = new Todo(req.body);
+
+	toCreate.save().then(function(newToDo) {
+	
+		console.log(newToDo);
+		res.send(newToDo);
+
+	});
+
+});
+
+app.delete('/api/todo/:id/',function(req, res){
+
+	console.log("req.param:");
+	console.log(req.params.id);
+	var myIdToFind = req.params.id;
+
+	Todo.findByIdAndDelete(myIdToFind).exec(function(err){
+		if(err){console.log(err)}
+		res.send('deleted');
+
+	})
+
+	// const toCreate = new Todo(req.body);
+
+	// toCreate.save().then(function(newToDo) {
+	
+	// 	console.log(newToDo);
+	// 	res.send(newToDo);
+
+	// });
 
 });
 
 
+
+
+// START server
 
 app.listen(3000, function () {
   console.log('Example app listening on port 3000!')
