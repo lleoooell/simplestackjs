@@ -26,9 +26,6 @@ const Todo = require('./server/api/todo/todo.js');
 
 // DEFINE CONF AND USES 
 
-
-// app.use('/css', express.static(__dirname + '/client/static/css'));
-// app.use('/js', express.static(__dirname + '/client/static/js'));
 app.use('/lib', express.static(__dirname + '/client/static/'));
 
 // parse application/x-www-form-urlencoded
@@ -39,7 +36,7 @@ app.use(bodyParser.json())
  
 
 
-// CREATE ROUTES
+// CREATE ROUTES API
 app.get('/', function (req, res) {
   res.sendFile( __dirname +  "/client/index.html" );
 
@@ -48,7 +45,7 @@ app.get('/', function (req, res) {
 app.get('/api/todo', function (req, res) {
 
 
-  Todo.find({}).exec(function(err, todoList) {
+Todo.find({}).exec(function(err, todoList) {
   	if(err){
   		console.log(err);
   	}
@@ -87,19 +84,11 @@ app.put('/api/todo/:id',function(req, res){
 		todo.todo = req.body.newvalue;
 		todo.save().then(function(updatedTodo){
 
+		io.emit("todo_updated",updatedTodo);
 		res.json(updatedTodo);
+		
 		})
 	});
-
-	// const toCreate = new Todo(req.body);
-
-	// toCreate.save().then(function(newToDo) {
-	// 	io.emit("todo_new",newToDo);
-
-	// 	console.log(newToDo);
-	// 	res.send(newToDo);
-
-	// });
 
 });
 
@@ -118,14 +107,6 @@ app.delete('/api/todo/:id/',function(req, res){
 
 	})
 
-	// const toCreate = new Todo(req.body);
-
-	// toCreate.save().then(function(newToDo) {
-	
-	// 	console.log(newToDo);
-	// 	res.send(newToDo);
-
-	// });
 
 });
 

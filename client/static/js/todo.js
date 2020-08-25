@@ -56,6 +56,33 @@ function editTodo(id, value) {
             
         });
 }
+function updatedTodo(socket) {
+
+    var li = document.getElementById(socket._id);
+    // li.innerText = socket.todo;
+    li.remove();
+    addTodo(socket);
+    var modal = document.getElementById("modal1");
+    var instance = M.Modal.getInstance(modal);
+    instance.close();
+
+    // console.log(id);
+
+    // fetch('/api/todo/' + id, {
+    //         method: 'PUT',
+    //         body: JSON.stringify({"iid" : id, 'newvalue' : value }),
+    //         headers: {
+    //             'Content-Type': 'application/json'
+    //         }
+    //     })
+    //     .then(function(res) {
+    //         return res.text()
+    //     }) // or res.json()
+    //     .then(function(res) {
+    //         console.log(res);
+            
+    //     });
+}
 
 function addTodo(todo) {
 
@@ -187,6 +214,12 @@ socket.on('todo_new', function(socket) {
     console.log('socket io return new add');
     console.log(socket);
     addTodo(socket);
+});
+socket.on('todo_updated', function(socket) {
+
+    console.log('socket io return new updated socket');
+    console.log(socket);
+    updatedTodo(socket);
 });
 
 
